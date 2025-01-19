@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Volunteer Hours</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <div class="d-flex">
+            <div class="bg-dark text-white p-3" style="width: 40vh; height: 100vh; position: fixed;">
+                <h2 class="text-center text-warning">Unity Volunteers</h2>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link text-secondary" href="dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link text-secondary" href="volunteer-opportunities">Upcoming
+                            Opportunities</a></li>
+                    <li class="nav-item active"><a class="nav-link text-warning" href="volunteer-hours">Volunteer
+                            Hours</a></li>
+                    <li class="nav-item"><a class="nav-link text-secondary  " href="account">Account Information</a></li>
+                </ul>
+            </div>
+            <div class="content p-4" style="margin-left: 45vh;">
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Volunteer Hours</h1>
+                    <a href="/logout" class="btn btn-warning">Sign Out</a>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="card-title">Total Hours</h2>
+                        <h5>{{ total_hours }}</h5>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body" style="width: 150vh;">
+                        <h2>Past Volunteer Events</h2>
+                        <ul id="pastEvents" class="list-unstyled">
+                            <!-- This section will be populated with past events from the database -->
+                            {% for log in logs %}
+                            <li class="mb-3">
+                                <strong>Event Name:</strong> {{ log.event }}<br>
+                                <strong>Date:</strong> {{ log.date.strftime('%Y-%m-%d') }}<br>
+                                <strong>Hours:</strong> {{ log.hours }}<br>
+                            </li>
+                            {% endfor %}
+                            <!-- Repeat the above block for each past event -->
+                        </ul>
+                    </div>
+                </div>
+                <button class="btn btn-warning mb-4" data-toggle="modal" data-target="#addHoursModal">Log Hours</button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="addHoursModal" tabindex="-1" role="dialog"
+                    aria-labelledby="addHoursModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addHoursModalLabel">Add Volunteer Hours</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/volunteer-hours" method="post">
+                                    <div class="form-group">
+                                        <label for="event">Event Name</label>
+                                        <input type="text" class="form-control" id="event" name="event" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="date">Date</label>
+                                        <input type="date" class="form-control" id="date" name="date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hours">Hours</label>
+                                        <input type="number" class="form-control" id="hours" name="hours" step="0.00001" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">Submit Hours</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <script>
+                function toggleLogHoursForm() {
+                    var form = document.querySelector('.log-hours-form');
+                    if (form.style.display === 'none' || form.style.display === '') {
+                        form.style.display = 'block';
+                    } else {
+                        form.style.display = 'none';
+                    }
+                }
+            </script>
+
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+
+</html>
