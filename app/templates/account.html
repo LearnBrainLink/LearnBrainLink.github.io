@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
 
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Information</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <div class="d-flex">
+            <div class="bg-dark text-white p-3" style="width: 40vh; height: 100vh; position: fixed;">
+                <h2 class="text-center text-warning">Unity Volunteers</h2>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link text-secondary" href="dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link text-secondary" href="/volunteer-opportunities">Upcoming
+                            Opportunities</a></li>
+                    <li class="nav-item"><a class="nav-link text-secondary" href="/volunteer-hours">Volunteer Hours</a>
+                    </li>
+                    <li class="nav-item active"><a class="nav-link text-warning" href="/account">Account Information</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="content p-4" style="margin-left: 45vh;">
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Account Information</h1>
+                    <a href="/logout" class="btn btn-warning">Sign Out</a>
+                </div>
+                <div class="card mb-4" style="width: 150vh;">
+                    <div class="card-body">
+                        <div class="account-info">
+                            <form action="/account" method="post">
+                                <label for="name">Name:</label>
+                                <p id="name">{{ name }}</p>
+                                <input type="text" id="name_input" name="name_input" class="form-control"
+                                    style="display:none;" value="{{ name }}">
+                                <label for="email">Email:</label>
+                                <p id="email">{{ email }}</p>
+                                <input type="email" id="email_input" name="email_input" class="form-control"
+                                    style="display:none;" value="{{ email }}">
+                                <label for="age">Age:</label>
+                                <p id="age">{{ age }}</p>
+                                <input type="number" id="age_input" name="age_input" class="form-control"
+                                    style="display:none;" value="{{ age }}">
+                                <button type="submit" class="btn btn-warning mt-3" id="save-button"
+                                    style="display:none;">Save Changes</button>
+                            </form>
+                        </div>
+                        <button class="btn btn-warning mt-3" id="edit-button" onclick="editFields()">Edit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function editFields() {
+                document.getElementById('name').style.display = 'none';
+                document.getElementById('email').style.display = 'none';
+                document.getElementById('age').style.display = 'none';
+
+                document.getElementById('name_input').style.display = 'block';
+                document.getElementById('email_input').style.display = 'block';
+                document.getElementById('age_input').style.display = 'block';
+
+                document.getElementById('edit-button').style.display = 'none';
+                document.getElementById('save-button').style.display = 'block';
+            }
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+
+</html>
