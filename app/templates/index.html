@@ -1,37 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Home</title>
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Unity Volunteers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
 
-    <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand text-warning card-subtitle font-weight-bold" href="/">Unity Volunteers</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-warning" href="login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-warning" href="register">Sign Up</a>
-                    </li>
-                </ul>
+        *:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        *:focus-visible {
+            box-shadow: 0 0 0 2px theme('colors.indigo.500');
+        }
+
+        .hero-section {
+            background-image: url('https://imageio.forbes.com/specials-images/imageserve/674a2e6e9e6f9163602ae98f/Volunteers-are-working-together-at-the-food-and-clothes-bank-serving-the-community-/960x0.jpg?format=jpg&width=960');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            color: white;
+            max-w: 800px;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            tracking-tight;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 flex flex-col min-h-screen antialiased">
+
+    <nav class="bg-indigo-600 shadow-lg sticky top-0 z-50" x-data="{ open: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a class="text-white font-bold text-xl tracking-tight" href="/">Unity Volunteers</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a class="text-indigo-100 hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
+                            href="/login">Login</a>
+                        <a class="text-indigo-100 hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
+                            href="register">Sign Up</a>
+                        <a class="text-indigo-100 hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
+                            href="/admin/register-page">Admin Register</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button @click="open = !open" type="button"
+                        class="bg-indigo-600 inline-flex items-center justify-center p-2 rounded-md text-indigo-200 hover:text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-600 focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg x-show="!open" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg x-show="open" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
-        </nav>
-        <main class="container content m-4">
-            <h1>Want to make a difference in your community?</h1>
-            <p>Unity Volunteers is all about helping the community and providing a platform for volunteers to connect
-                with organizations that need help.</p>
-            <p>Join us in making a difference through Unity Volunteers opportunities.</p>
-            <a href="register" class="btn btn-warning">Get Started</a>
-        </main>
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
+        </div>
+
+        <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="md:hidden absolute top-16 inset-x-0 p-2 transform origin-top-right" id="mobile-menu">
+            <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
+                <div class="pt-5 pb-6 px-5">
+                    <div class="mt-6">
+                        <nav class="grid gap-y-8">
+                            <a href="login"
+                                class="-m-3 p-3 flex items-center rounded-md hover:bg-gray-50 transition ease-in-out duration-150">
+                                <span class="ml-3 text-base font-medium text-gray-900">Login</span>
+                            </a>
+                            <a href="register"
+                                class="-m-3 p-3 flex items-center rounded-md hover:bg-gray-50 transition ease-in-out duration-150">
+                                <span class="ml-3 text-base font-medium text-gray-900">Sign Up</span>
+                            </a>
+                            <a href="/admin/register-page"
+                                class="-m-3 p-3 flex items-center rounded-md hover:bg-gray-50 transition ease-in-out duration-150">
+                                <span class="ml-3 text-base font-medium text-gray-900">Admin Register</span>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1">
+        <section class="hero-section relative">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1 class="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+                    Making a Difference, Together.
+                </h1>
+                <p class="mt-6 text-lg leading-8 sm:text-xl">
+                    Join a community of passionate individuals dedicated to creating positive change through volunteering.
+                </p>
+                <div class="mt-8 flex items-center justify-center gap-x-6">
+                    <a href="register"
+                        class="rounded-md bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                        Get Involved
+                    </a>
+                    <a href="#" class="text-white text-base font-semibold hover:underline">
+                        Learn More <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <div class="bg-gray-100 py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Explore Opportunities</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div
+                        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 ease-in-out">
+                        <div class="px-6 py-4">
+                            <div class="font-bold text-xl text-indigo-700 mb-2">Environmental Cleanup</div>
+                            <p class="text-gray-700 text-base">Help us protect our local environment by participating in
+                                cleanup drives.</p>
+                            <button
+                                class="mt-4 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Learn
+                                More</button>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 ease-in-out">
+                        <div class="px-6 py-4">
+                            <div class="font-bold text-xl text-indigo-700 mb-2">Community Support</div>
+                            <p class="text-gray-700 text-base">Support vulnerable members of our community through
+                                various outreach programs.</p>
+                            <button
+                                class="mt-4 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Learn
+                                More</button>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 ease-in-out">
+                        <div class="px-6 py-4">
+                            <div class="font-bold text-xl text-indigo-700 mb-2">Education & Mentoring</div>
+                            <p class="text-gray-700 text-base">Inspire the next generation by volunteering in educational
+                                and mentoring roles.</p>
+                            <button
+                                class="mt-4 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Learn
+                                More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-indigo-100 py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-indigo-900 text-center mb-8">Why Volunteer With Us?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <svg class="mx-auto h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354l-2.169 4.353L2.684 12l4.353 2.169L12 18.646l2.169-4.353L21.316 12l-4.353-2.169L12 4.354z" />
+                        </svg>
+                        <h3 class="mt-2 font-semibold text-lg text-gray-800">Make an Impact</h3>
+                        <p class="mt-1 text-sm text-gray-600">Contribute to meaningful causes and see the direct results
+                            of your efforts.</p>
+                    </div>
+                    <div class="text-center">
+                        <svg class="mx-auto h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-3-3H7a3 3 0 00-3 3v2h5m6 0h2m-2-3h2m-2-3h2m-2-3h2m-2-3h2m-2-3h2" />
+                        </svg>
+                        <h3 class="mt-2 font-semibold text-lg text-gray-800">Connect with Community</h3>
+                        <p class="mt-1 text-sm text-gray-600">Meet like-minded individuals and build strong relationships
+                            within your community.</p>
+                    </div>
+                    <div class="text-center">
+                        <svg class="mx-auto h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 15h9v2H4l9-12v5l-2 2H4" />
+                        </svg>
+                        <h3 class="mt-2 font-semibold text-lg text-gray-800">Learn New Skills</h3>
+                        <p class="mt-1 text-sm text-gray-600">Gain valuable experience and develop new skills through
+                            diverse volunteering roles.</p>
+                    </div>
+                    <div class="text-center">
+                        <svg class="mx-auto h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="mt-2 font-semibold text-lg text-gray-800">Flexible Schedules</h3>
+                        <p class="mt-1 text-sm text-gray-600">Find opportunities that fit your availability and make
+                            volunteering work for you.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 text-center py-6 mt-auto">
+        &copy; <span id="current-year"></span> Unity Volunteers. All rights reserved.
+        <script>document.getElementById('current-year').textContent = new Date().getFullYear();</script>
+    </footer>
+
+</body>
 
 </html>

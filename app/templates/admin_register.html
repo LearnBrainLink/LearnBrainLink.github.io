@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Unity Volunteers</title>
+    <title>Create Admin Account - Unity Volunteers</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -49,19 +49,19 @@
                     </a>
                 </div>
 
-                <h2 class="text-2xl font-semibold text-unity-text-dark text-center mb-6">Create Account</h2>
+                <h2 class="text-2xl font-semibold text-unity-text-dark text-center mb-6">Create Admin Account</h2>
 
                 {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                 {% for category, message in messages %}
                 <div x-data="{ open: true }" x-show="open"
-                    class="bg-{{ 'red' if category == 'error' else 'green' }}-100 border border-{{ 'red' if category == 'error' else 'green' }}-400 text-{{ 'red' if category == 'error' else 'green' }}-700 px-4 py-3 rounded relative mb-4"
+                    class="bg-{% if category == 'error' %}red{% else %}green{% endif %}-100 border border-{% if category == 'error' %}red{% else %}green{% endif %}-400 text-{% if category == 'error' %}red{% else %}green{% endif %}-700 px-4 py-3 rounded relative mb-4"
                     role="alert">
-                    <strong class="font-bold">{{ 'Error!' if category == 'error' else 'Success!' }}</strong>
+                    <strong class="font-bold">{% if category == 'error' %}Error!{% else %}Success!{% endif %}</strong>
                     <span class="block sm:inline">{{ message }}</span>
                     <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
                         <button @click="open = false" type="button"
-                            class="text-{{ 'red' if category == 'error' else 'green' }}-500 hover:text-{{ 'red' if category == 'error' else 'green' }}-700 focus:outline-none">
+                            class="text-{% if category == 'error' %}red{% else %}green{% endif %}-500 hover:text-{% if category == 'error' %}red{% else %}green{% endif %}-700 focus:outline-none">
                             <svg class="h-6 w-6 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 20 20">
                                 <title>Close</title>
@@ -75,8 +75,7 @@
                 {% endfor %}
                 {% endif %}
                 {% endwith %}
-
-                <form action="/register" method="post" class="space-y-4">
+                <form action="/admin/register" method="post" class="space-y-4">
                     <div>
                         <label for="username" class="block text-sm font-medium text-unity-text-muted">Username</label>
                         <input type="text" id="username" name="username"
@@ -115,9 +114,16 @@
                             required>
                     </div>
                     <div>
+                        <label for="adminCode" class="block text-sm font-medium text-unity-text-muted">Admin Code</label>
+                        <input type="text" id="adminCode" name="adminCode"
+                            class="shadow-sm focus:ring-unity-primary focus:border-unity-primary block w-full sm:text-sm border-unity-border rounded-md py-2 text-unity-text-dark"
+                            required>
+                        <p class="text-xs text-unity-text-muted mt-1">Enter the code to create an admin account.</p>
+                    </div>
+                    <div>
                         <button type="submit"
                             class="w-full py-2 px-4 bg-unity-primary text-unity-text-white font-semibold rounded-md shadow-md hover:bg-unity-primary-darker focus:outline-none focus:ring-2 focus:ring-unity-primary focus:ring-offset-2">
-                            Sign Up
+                            Create Admin Account
                         </button>
                     </div>
                 </form>

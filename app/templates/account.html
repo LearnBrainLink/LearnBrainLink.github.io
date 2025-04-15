@@ -1,88 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Account Information</title>
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Information - Unity Volunteers</title> <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --indigo: #4338ca;
+            --light-indigo: #e0e7ff;
+            --text-dark: #212529;
+            --text-white: #ffffff;
+            --light-gray-bg: #f8f9fa;
+            --text-secondary-custom: #6c757d;
+        }
 
-    <body>
-        <div class="d-flex">
-            <div class="bg-dark text-white p-3" style="width: 40vh; height: 100vh; position: fixed;">
-                <h2 class="text-center text-warning">Unity Volunteers</h2>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link text-secondary" href="dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link text-secondary" href="/volunteer-opportunities">Upcoming
-                            Opportunities</a></li>
-                    <li class="nav-item"><a class="nav-link text-secondary" href="/volunteer-hours">Volunteer Hours</a>
-                    </li>
-                    <li class="nav-item active"><a class="nav-link text-warning" href="/account">Account Information</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="content p-4" style="margin-left: 45vh;">
-                {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>Account Information</h1>
-                    <a href="/logout" class="btn btn-warning">Sign Out</a>
-                </div>
-                <div class="card mb-4" style="width: 150vh;">
-                    <div class="card-body">
-                        <div class="account-info">
-                            <form action="/account" method="post">
-                                <label for="name">Name:</label>
-                                <p id="name">{{ name }}</p>
-                                <input type="text" id="name_input" name="name_input" class="form-control"
-                                    style="display:none;" value="{{ name }}">
-                                <label for="email">Email:</label>
-                                <p id="email">{{ email }}</p>
-                                <input type="email" id="email_input" name="email_input" class="form-control"
-                                    style="display:none;" value="{{ email }}">
-                                <label for="age">Age:</label>
-                                <p id="age">{{ age }}</p>
-                                <input type="number" id="age_input" name="age_input" class="form-control"
-                                    style="display:none;" value="{{ age }}">
-                                <button type="submit" class="btn btn-warning mt-3" id="save-button"
-                                    style="display:none;">Save Changes</button>
-                            </form>
-                        </div>
-                        <button class="btn btn-warning mt-3" id="edit-button" onclick="editFields()">Edit</button>
-                    </div>
-                </div>
-            </div>
+        html,
+        body {
+            height: 100%;
+            background-color: var(--light-gray-bg);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+                "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        .sidebar {
+            box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            /* Fixed width/height/position defined inline below */
+        }
+
+        .content {
+            margin-left: 40vh;
+            background-color: var(--light-gray-bg);
+            min-height: 100vh;
+            width: calc(100% - 40vh);
+            padding: 1.5rem; /* Consistent padding */
+            padding-bottom: 2rem; /* Ensure space at bottom */
+        }
+
+        .sidebar-title {
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+            font-weight: 600;
+            font-size: 1.25rem; /* Adjusted size */
+        }
+
+        .sidebar-title:hover {
+            color: var(--indigo);
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--indigo);
+            color: var(--text-white);
+            text-decoration: none;
+        }
+
+        /* NOTE: Hardcoded 'active' class below needs dynamic handling */
+        .sidebar .nav-item.active .nav-link {
+            background-color: var(--indigo);
+            color: var(--text-white);
+        }
+
+        .btn-custom-indigo {
+            background-color: var(--light-indigo);
+            color: var(--indigo);
+            border: 1px solid var(--light-indigo);
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out,
+                border-color 0.2s ease-in-out;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+        }
+
+        .btn-custom-indigo:hover {
+            background-color: var(--indigo);
+            color: var(--text-white);
+            border-color: var(--indigo);
+            text-decoration: none;
+        }
+
+        .btn-signout {
+            font-weight: normal;
+            font-size: 0.875rem;
+        }
+
+        .text-indigo {
+            color: var(--indigo);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            background-color: #ffffff;
+        }
+
+        /* Account Information Page Specific Styles */
+        .account-info {
+             /* Removed padding - handled by card-body */
+        }
+
+        .account-info .form-group label { /* Target label within form-group */
+            font-weight: 600;
+            color: var(--text-dark); /* Changed from indigo */
+            display: block;
+            margin-bottom: 0.3rem; /* Reduced margin */
+        }
+
+        .account-info p { /* Style for displayed text */
+            margin-bottom: 0.5rem; /* Space below text before input */
+            font-size: 1rem; /* Standard font size */
+            color: var(--text-dark);
+            padding: 0.375rem 0.75rem; /* Mimic input padding */
+            border: 1px solid transparent; /* Match input border space */
+            line-height: 1.5; /* Match input line height */
+        }
+
+        .account-info input[type="text"],
+        .account-info input[type="email"],
+        .account-info input[type="number"] {
+             /* Use standard Bootstrap form-control styles */
+             /* width, padding, border, radius, margin, display, font-size handled by .form-control */
+        }
+
+        .account-info input.form-control:focus { /* Target .form-control */
+            border-color: var(--indigo);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(67, 56, 202, 0.25); /* Match BS focus */
+        }
+
+        /* Removed .btn-warning override - use .btn-custom-indigo */
+
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <div class="sidebar bg-white text-dark p-3 shadow-sm" style="width: 40vh; height: 100vh; position: fixed;">
+             <a href="{{ url_for('index') }}" class="sidebar-title d-block text-center mb-4">Unity Volunteers</a>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('volunteeropportunities') }}">Upcoming Opportunities</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('volunteerhours') }}">Volunteer Hours</a>
+                </li>
+                 <li class="nav-item active">
+                     <a class="nav-link" href="{{ url_for('account') }}">Account Information</a>
+                </li>
+            </ul>
         </div>
+        <div class="content p-4"> {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {# Map category to Bootstrap alert class #}
+            {% set alert_class = 'alert-success' if category == 'success' else ('alert-danger' if category == 'error' else ('alert-warning' if category == 'warning' else 'alert-info')) %}
+            <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h1 class="h2 font-weight-normal">Account Information</h1>
+                 <a href="{{ url_for('logout') }}" class="btn btn-custom-indigo btn-signout">Sign Out</a>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="account-info">
+                        <form action="{{ url_for('account') }}" method="post">
+                            <div class="form-group">
+                                <label for="name_input">Name:</label>
+                                <p id="name_display">{{ name }}</p>
+                                <input type="text" id="name_input" name="name_input"
+                                       class="form-control" style="display:none;"
+                                       value="{{ name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email_input">Email:</label>
+                                <p id="email_display">{{ email }}</p>
+                                <input type="email" id="email_input" name="email_input"
+                                       class="form-control" style="display:none;"
+                                       value="{{ email }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="age_input">Age:</label>
+                                <p id="age_display">{{ age }}</p>
+                                <input type="number" id="age_input" name="age_input"
+                                       class="form-control" style="display:none;"
+                                       value="{{ age }}" required min="1"> </div>
+                             <button type="submit" class="btn btn-custom-indigo mt-3"
+                                    id="save-button" style="display:none;">Save Changes</button>
+                        </form>
+                    </div>
+                    <button class="btn btn-secondary mt-3" id="edit-button"
+                            onclick="editFields()">Edit Information</button>
+                </div>
+            </div>
+             </div>
+        </div> <script>
+        function editFields() {
+            // Hide display fields
+            document.getElementById('name_display').style.display = 'none';
+            document.getElementById('email_display').style.display = 'none';
+            document.getElementById('age_display').style.display = 'none';
 
-        <script>
-            function editFields() {
-                document.getElementById('name').style.display = 'none';
-                document.getElementById('email').style.display = 'none';
-                document.getElementById('age').style.display = 'none';
+            // Show input fields
+            document.getElementById('name_input').style.display = 'block';
+            document.getElementById('email_input').style.display = 'block';
+            document.getElementById('age_input').style.display = 'block';
 
-                document.getElementById('name_input').style.display = 'block';
-                document.getElementById('email_input').style.display = 'block';
-                document.getElementById('age_input').style.display = 'block';
+            // Toggle buttons
+            document.getElementById('edit-button').style.display = 'none';
+            document.getElementById('save-button').style.display = 'block';
+        }
+    </script>
 
-                document.getElementById('edit-button').style.display = 'none';
-                document.getElementById('save-button').style.display = 'block';
-            }
-        </script>
-
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
 
 </html>

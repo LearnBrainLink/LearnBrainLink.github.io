@@ -1,43 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dashboard</title>
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Unity Volunteers</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Define Indigo color variables */
+        :root {
+            --indigo: #4338ca; /* Main Indigo */
+            --light-indigo: #e0e7ff; /* Lighter Indigo */
+            --text-dark: #212529; /* Standard dark text */
+            --text-white: #ffffff; /* Standard white text */
+            --light-gray-bg: #f8f9fa; /* Background for content area */
+            --text-secondary-custom: #6c757d; /* Bootstrap secondary text color */
+        }
 
-    <body>
-        <div class="d-flex">
-            <div class="bg-dark text-white p-3" style="width: 40vh; height: 100vh; position: fixed;">
-                <h2 class="text-center text-warning">Unity Volunteers</h2>
-                <ul class="nav flex-column">
-                    <li class="nav-item active"><a class="nav-link text-warning active" href="/dashboard">Dashboard</a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link text-secondary" href="/volunteer-opportunities">Upcoming
-                            Opportunities</a></li>
-                    <li class="nav-item"><a class="nav-link text-secondary" href="/volunteer-hours">Volunteer Hours</a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link text-secondary" href="/account">Account Information</a></li>
-                </ul>
+        body {
+            background-color: var(--light-gray-bg);
+        }
+
+        .sidebar {
+            background-color: #ffffff;
+            color: var(--text-dark);
+            border-right: 1px solid #dee2e6;
+            /* Fixed width/height/position defined inline below */
+        }
+
+        .content {
+             /* Margin adjusted to match sidebar width (40vh) */
+            margin-left: 40vh;
+            background-color: var(--light-gray-bg);
+            min-height: 100vh;
+            /* Explicit width calculation */
+            width: calc(100% - 40vh);
+            padding: 1.5rem; /* Added padding consistent with p-4 */
+        }
+
+        .sidebar-title {
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+            font-weight: 600;
+        }
+        .sidebar-title:hover {
+            color: var(--indigo);
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--indigo);
+            color: var(--text-white);
+            text-decoration: none;
+        }
+
+        /* Active state for the current page's sidebar nav link */
+        /* NOTE: Hardcoded 'active' class below needs dynamic handling for multi-page use */
+        .sidebar .nav-item.active .nav-link {
+            background-color: var(--indigo);
+            color: var(--text-white);
+        }
+
+        .btn-custom-indigo {
+            background-color: var(--light-indigo);
+            color: var(--indigo);
+            border: 1px solid var(--light-indigo);
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .btn-custom-indigo:hover {
+            background-color: var(--indigo);
+            color: var(--text-white);
+            border-color: var(--indigo);
+            text-decoration: none;
+        }
+        .btn-signout {
+            padding: 0.375rem 0.75rem;
+            font-weight: normal;
+        }
+
+        .text-indigo {
+            color: var(--indigo);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Subtle shadow */
+            background-color: #ffffff;
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            color: var(--text-secondary-custom);
+            font-weight: 400;
+            margin-bottom: 0.75rem;
+        }
+
+        .hours-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .list-recent-activity {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+        .list-recent-activity li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #dee2e6;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+        .list-recent-activity li:last-child {
+            border-bottom: none;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <div class="sidebar p-3" style="width: 40vh; height: 100vh; position: fixed;">
+            <a href="{{ url_for('index') }}" class="sidebar-title h5 d-block text-center mb-4 mt-2">Unity Volunteers</a>
+            <ul class="nav flex-column">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('volunteeropportunities') }}">Upcoming Opportunities</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('volunteerhours') }}">Volunteer Hours</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('account') }}">Account Information</a>
+                </li>
+                 {% if is_admin %}
+                 <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('admin_register') }}">(Admin Register)</a>
+                     </li>
+                 {% endif %}
+            </ul>
+        </div>
+
+        <div class="content"> <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Welcome, {{ name }}!</h1>
+                <a href="{{ url_for('logout') }}" class="btn btn-custom-indigo btn-signout">Sign Out</a>
             </div>
-            <div class="content p-4" style="margin-left: 45vh;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>Welcome, {{ name }}!</h1>
-                    <a href="/logout" class="btn btn-warning">Sign Out</a>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2>Hours Volunteered</h2>
+                    <div class="hours-display text-indigo">{{ total_hours }}</div>
                 </div>
-                <div class="card mb-4">
-                    <div class="card-body" style="width: 150vh;">
-                        <h2>Hours Volunteered</h2>
-                        <h5>{{ total_hours }}</h5>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2>Quick Actions</h2>
+                    <div class="d-flex flex-column flex-md-row">
+                         <a href="{{ url_for('volunteeropportunities') }}" class="btn btn-custom-indigo flex-fill mr-md-2 mb-2 mb-md-0">Find Opportunities</a>
+                        <a href="{{ url_for('volunteerhours') }}" class="btn btn-custom-indigo flex-fill ml-md-2">Log Hours</a>
                     </div>
                 </div>
             </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2>Recent Activity</h2>
+                    {# This section requires `recent_activities` to be passed from the Flask route #}
+                    {% if recent_activities %}
+                        <ul class="list-recent-activity">
+                            {% for activity in recent_activities %}
+                                <li>
+                                    {{ activity.description }} on
+                                    <span class="font-weight-bold">{{ activity.date.strftime('%B %d, %Y') }}</span>.
+                                    {# Ensure 'activity' has 'description' and 'date' attributes #}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No recent activity to display.</p>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
 
 </html>

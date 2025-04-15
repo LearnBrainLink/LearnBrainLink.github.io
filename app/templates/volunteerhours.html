@@ -1,113 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Volunteer Hours</title>
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Hours - Unity Volunteers</title> <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --indigo: #4338ca;
+            --light-indigo: #e0e7ff;
+            --text-dark: #212529;
+            --text-white: #ffffff;
+            --light-gray-bg: #f8f9fa;
+            --text-secondary-custom: #6c757d;
+        }
 
-    <body>
-        <div class="d-flex">
-            <div class="bg-dark text-white p-3" style="width: 40vh; height: 100vh; position: fixed;">
-                <h2 class="text-center text-warning">Unity Volunteers</h2>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link text-secondary" href="dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link text-secondary" href="volunteer-opportunities">Upcoming
-                            Opportunities</a></li>
-                    <li class="nav-item active"><a class="nav-link text-warning" href="volunteer-hours">Volunteer
-                            Hours</a></li>
-                    <li class="nav-item"><a class="nav-link text-secondary  " href="account">Account Information</a></li>
-                </ul>
+        html,
+        body {
+            height: 100%;
+            background-color: var(--light-gray-bg);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+                "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        .sidebar {
+            box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            /* Fixed width/height/position defined inline below */
+        }
+
+        .content {
+            margin-left: 40vh;
+            background-color: var(--light-gray-bg);
+            min-height: 100vh;
+            width: calc(100% - 40vh);
+            padding: 1.5rem; /* Consistent padding */
+            padding-bottom: 2rem; /* Ensure space at bottom */
+        }
+
+        .sidebar-title {
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+            font-weight: 600;
+            font-size: 1.25rem; /* Adjusted size */
+        }
+
+        .sidebar-title:hover {
+            color: var(--indigo);
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--indigo);
+            color: var(--text-white);
+            text-decoration: none;
+        }
+
+        /* NOTE: Hardcoded 'active' class below needs dynamic handling */
+        .sidebar .nav-item.active .nav-link {
+            background-color: var(--indigo);
+            color: var(--text-white);
+        }
+
+        .btn-custom-indigo {
+            background-color: var(--light-indigo);
+            color: var(--indigo);
+            border: 1px solid var(--light-indigo);
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out,
+                border-color 0.2s ease-in-out;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+        }
+
+        .btn-custom-indigo:hover {
+            background-color: var(--indigo);
+            color: var(--text-white);
+            border-color: var(--indigo);
+            text-decoration: none;
+        }
+
+        .btn-signout {
+            font-weight: normal;
+            font-size: 0.875rem;
+        }
+
+        .text-indigo {
+            color: var(--indigo);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            background-color: #ffffff;
+        }
+
+        /* Specific style for Total Hours display */
+        .total-hours-display {
+            font-size: 2rem; /* Adjust as needed */
+            font-weight: bold;
+            color: var(--indigo);
+            margin-bottom: 0; /* Remove default margin if needed */
+        }
+
+        /* Removed duplicated modal styles - assume they are shared or defined elsewhere */
+
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <div class="sidebar bg-white text-dark p-3 shadow-sm" style="width: 40vh; height: 100vh; position: fixed;">
+             <a href="{{ url_for('index') }}" class="sidebar-title d-block text-center mb-4">Unity Volunteers</a>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('volunteeropportunities') }}">Upcoming Opportunities</a>
+                </li>
+                 <li class="nav-item active">
+                     <a class="nav-link" href="{{ url_for('volunteerhours') }}">Volunteer Hours</a>
+                </li>
+                <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('account') }}">Account Information</a>
+                </li>
+            </ul>
+        </div>
+        <div class="content p-4"> {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {# Map category to Bootstrap alert class #}
+            {% set alert_class = 'alert-success' if category == 'success' else ('alert-danger' if category == 'error' else ('alert-warning' if category == 'warning' else 'alert-info')) %}
+            <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <div class="content p-4" style="margin-left: 45vh;">
-                {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h1 class="h2 font-weight-normal">Volunteer Hours</h1>
+                 <a href="{{ url_for('logout') }}" class="btn btn-custom-indigo btn-signout">Sign Out</a>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body text-center"> <h2 class="card-title h6 text-secondary text-uppercase">Total Hours Logged</h2> <h5 class="total-hours-display">{{ total_hours }}</h5>
+                </div>
+            </div>
+            <button class="btn btn-custom-indigo mb-4" data-toggle="modal" data-target="#addHoursModal">
+                 Log New Hours
+             </button>
+             <div class="card mb-4">
+                 <div class="card-body">
+                    <h2 class="card-title h6 text-secondary text-uppercase">Log History</h2> {% if logs %}
+                    <ul id="pastEvents" class="list-unstyled">
+                        {% for log in logs %}
+                        <li class="mb-3 pb-2 border-bottom"> <strong>Event:</strong> {{ log.event }}<br>
+                            <strong>Date:</strong> {{ log.date.strftime('%Y-%m-%d') }}<br>
+                            <strong>Hours:</strong> {{ log.hours }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">You haven't logged any hours yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+             </div>
+        </div> <div class="modal fade" id="addHoursModal" tabindex="-1" role="dialog" aria-labelledby="addHoursModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addHoursModalLabel">Log Volunteer Hours</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>Volunteer Hours</h1>
-                    <a href="/logout" class="btn btn-warning">Sign Out</a>
-                </div>
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h2 class="card-title">Total Hours</h2>
-                        <h5>{{ total_hours }}</h5>
-                    </div>
-                </div>
-                <div class="card mb-4">
-                    <div class="card-body" style="width: 150vh;">
-                        <h2>Past Volunteer Events</h2>
-                        <ul id="pastEvents" class="list-unstyled">
-                            <!-- This section will be populated with past events from the database -->
-                            {% for log in logs %}
-                            <li class="mb-3">
-                                <strong>Event Name:</strong> {{ log.event }}<br>
-                                <strong>Date:</strong> {{ log.date.strftime('%Y-%m-%d') }}<br>
-                                <strong>Hours:</strong> {{ log.hours }}<br>
-                            </li>
-                            {% endfor %}
-                            <!-- Repeat the above block for each past event -->
-                        </ul>
-                    </div>
-                </div>
-                <button class="btn btn-warning mb-4" data-toggle="modal" data-target="#addHoursModal">Log Hours</button>
-
-                <!-- Modal -->
-                <div class="modal fade" id="addHoursModal" tabindex="-1" role="dialog"
-                    aria-labelledby="addHoursModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addHoursModalLabel">Add Volunteer Hours</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <form action="/volunteer-hours" method="post">
-                                    <div class="form-group">
-                                        <label for="event">Event Name</label>
-                                        <input type="text" class="form-control" id="event" name="event" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="date">Date</label>
-                                        <input type="date" class="form-control" id="date" name="date" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="hours">Hours</label>
-                                        <input type="number" class="form-control" id="hours" name="hours" step="0.00001" required>
-                                    </div>
-                                    <button type="submit" class="btn btn-warning">Submit Hours</button>
-                                </form>
-                            </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('volunteerhours') }}" method="post" id="logHoursForm">
+                        <div class="form-group">
+                            <label for="event">Event Name</label>
+                            <input type="text" class="form-control" id="event" name="event" required>
                         </div>
-                    </div>
+                        <div class="form-group">
+                            <label for="date">Date Completed</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hours">Hours Logged</label>
+                            <input type="number" class="form-control" id="hours" name="hours" step="0.1" min="0" required>
+                        </div>
+                    </form>
                 </div>
-
-            <script>
-                function toggleLogHoursForm() {
-                    var form = document.querySelector('.log-hours-form');
-                    if (form.style.display === 'none' || form.style.display === '') {
-                        form.style.display = 'block';
-                    } else {
-                        form.style.display = 'none';
-                    }
-                }
-            </script>
-
-            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" form="logHoursForm" class="btn btn-custom-indigo">Submit Hours</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
 
 </html>
