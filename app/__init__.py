@@ -146,6 +146,7 @@ def login():
             if user and user.check_password(password):
                 session['user_id'] = user.id
                 session['is_admin'] = user.is_admin  # Store admin status in session
+                app.logger.info(f"Login successful for user '{username}'. Setting session is_admin to {user.is_admin}") # Added login log
                 flash('Login successful!', 'success')
                 return redirect(url_for('dashboard'))
             else:
@@ -169,15 +170,20 @@ def volunteeropportunities():
     user = db.session.get(User, user_id)
     if not user:
         flash('User not found. Please log in again.', 'error')
+        session.pop('user_id', None) # Clear session if user is invalid
+        session.pop('is_admin', None)
         return redirect(url_for('login'))
 
     # Fetch opportunities initially for GET request or if POST fails before redirect
     opportunities = VolunteerOpportunity.query.order_by(VolunteerOpportunity.date.desc()).all()
 
     if request.method == 'POST':
-        if not session.get('is_admin', False):  # Check admin status
+        # --- Check admin status for POST authorization ---
+        # Use user.is_admin for the most up-to-date check from DB
+        if not user.is_admin:
+            app.logger.warning(f"Unauthorized POST attempt to add opportunity by user '{user.username}' (ID: {user_id}).")
             flash('You do not have permission to add opportunities.', 'warning')
-            return redirect(url_for('volunteeropportunities'))
+            return redirect(url_for('volunteeropportunities')) # Redirect if not admin on POST
 
         event = request.form.get('event')
         date_str = request.form.get('date')
@@ -187,7 +193,7 @@ def volunteeropportunities():
 
         if not all([event, date_str, duration_str, location, link]):
             flash('All fields are required to create an opportunity.', 'error')
-            # Render again with fetched opportunities
+            # Render again with fetched opportunities, pass current admin status
             return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
         try:
@@ -216,10 +222,22 @@ def volunteeropportunities():
             db.session.rollback()
             app.logger.error(f"Database error creating opportunity: {e}")  # Example logging
             flash('An error occurred creating the opportunity. Please try again.', 'error')
-            # No need to fetch opportunities again, already fetched before 'if POST'
+            # Render the template again on error
             return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
+    # --- VITAL DEBUGGING (For GET request path) ---
+    # This block runs when the page is loaded (GET) or if POST validation fails above and renders the template
+    admin_status_from_db = user.is_admin # Get current status from DB object
+    admin_status_from_session = session.get('is_admin', 'Not Found in Session') # Compare with session value if needed
+
+    app.logger.info(f"--- Checking admin status for user '{user.username}' (ID: {user_id}) on opportunities page ---")
+    app.logger.info(f"Value of user.is_admin from DB check: {admin_status_from_db} (Type: {type(admin_status_from_db)})")
+    app.logger.info(f"Value of 'is_admin' in session: {admin_status_from_session} (Type: {type(admin_status_from_session)})")
+    app.logger.info(f"Passing is_admin={admin_status_from_db} to the template.")
+    # --- END DEBUGGING ---
+
     # GET request - Render with fetched opportunities
+    # Pass the definitive status from the DB object
     return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
 
@@ -233,6 +251,8 @@ def volunteerhours():
     user = db.session.get(User, user_id)
     if not user:
         flash('User not found. Please log in again.', 'error')
+        session.pop('user_id', None) # Clear session if user is invalid
+        session.pop('is_admin', None)
         return redirect(url_for('login'))
 
     # Fetch logs initially for GET or if POST fails before redirect
@@ -246,6 +266,7 @@ def volunteerhours():
 
         if not all([hours_str, event, date_str]):
             flash('All fields are required to log hours.', 'error')
+            # Pass admin status even when rendering on error
             return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
         try:
@@ -259,7 +280,8 @@ def volunteerhours():
 
         try:
             date = datetime.strptime(date_str, "%Y-%m-%d")
-            if date > datetime.now():
+            # Changed date check to be just date part
+            if date.date() > datetime.now().date():
                 flash('Cannot log hours for a future date.', 'error')
                 return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
         except ValueError:
@@ -276,10 +298,11 @@ def volunteerhours():
             db.session.rollback()
             app.logger.error(f"Database error logging hours: {e}")  # Example logging
             flash('An error occurred logging hours. Please try again.', 'error')
-            # No need to fetch logs/total again
+            # Pass admin status when rendering on error
             return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
     # GET request - Render with fetched logs/total
+    # Pass admin status for GET request
     return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
 
@@ -292,10 +315,8 @@ def dashboard():
     user_id = session['user_id']  # Get user_id once
 
     try:
-        # Use get_or_404 for cleaner handling of not found user
         user = db.session.get(User, user_id)  # Use newer session.get method
         if not user:
-            # This case might be less likely now with session.get behavior but keep check
             session.pop('user_id', None)
             session.pop('is_admin', None)
             flash('User not found. Please log in again.', 'error')
@@ -303,8 +324,10 @@ def dashboard():
 
         logs = HoursLog.query.filter_by(user_id=user_id).all()
         total_hours = sum(log.hours for log in logs)
-        is_admin = session.get('is_admin', False)
-        return render_template('dashboard.html', name=user.name, total_hours=total_hours, is_admin=is_admin)
+        # Get definitive admin status from user object for display
+        is_admin_status = user.is_admin
+        app.logger.info(f"Dashboard access for user '{user.username}'. Admin status: {is_admin_status}") # Log dashboard access
+        return render_template('dashboard.html', name=user.name, total_hours=total_hours, is_admin=is_admin_status)
     except SQLAlchemyError as e:
         app.logger.error(f"Database error on dashboard for user {user_id}: {e}")  # Example logging
         flash('An error occurred accessing the dashboard.', 'error')
@@ -313,6 +336,15 @@ def dashboard():
 
 @app.route('/logout')
 def logout():
+    # Get username before popping session for logging purposes
+    user_id = session.get('user_id')
+    username = 'Unknown user'
+    if user_id:
+        user = db.session.get(User, user_id)
+        if user:
+            username = user.username
+    app.logger.info(f"User '{username}' (ID: {user_id}) logged out.")
+
     # Remove user info from session
     session.pop('user_id', None)
     session.pop('is_admin', None)
@@ -327,7 +359,6 @@ def account():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    # Use session.get for user object - handles potential DB errors better within try block
     user = db.session.get(User, user_id)
 
     if not user:
@@ -335,6 +366,9 @@ def account():
         session.pop('is_admin', None)
         flash('User not found. Please log in again.', 'error')
         return redirect(url_for('login'))
+
+    # Determine admin status for potential display on account page
+    is_admin_status = user.is_admin # Use the DB value
 
     if request.method == 'POST':
         original_email = user.email
@@ -344,23 +378,24 @@ def account():
 
         if not all([name_input, new_email, age_input_str]):
             flash('Name, email, and age are required.', 'error')
-            return render_template('account.html', name=user.name, email=user.email, age=user.age)
+            # Pass is_admin status when rendering on error
+            return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
 
         try:
             age_input = int(age_input_str)
             if age_input <= 0:
                 flash('Age must be a positive number.', 'error')
-                return render_template('account.html', name=user.name, email=user.email, age=user.age)
+                return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
         except ValueError:
             flash('Invalid age format. Please enter a number.', 'error')
-            return render_template('account.html', name=user.name, email=user.email, age=user.age)
+            return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
 
         # Check email uniqueness only if it changed
         email_changed = new_email != original_email
         if email_changed and User.query.filter(User.id != user_id, User.email == new_email).first():
             flash('That email address is already registered by another user.', 'error')
-            # Render with originally fetched user data but keep attempted name/age changes in form
-            return render_template('account.html', name=name_input, email=original_email, age=age_input_str)
+            # Render with originally fetched user data but keep attempted changes in form
+            return render_template('account.html', name=name_input, email=original_email, age=age_input_str, is_admin=is_admin_status)
 
         # Update user object
         user.name = name_input
@@ -370,18 +405,21 @@ def account():
         try:
             db.session.commit()
             flash('Account updated successfully!', 'success')
-            # Render template directly to show updated info without full redirect
-            return render_template('account.html', name=user.name, email=user.email, age=user.age)
+            app.logger.info(f"Account updated for user '{user.username}' (ID: {user_id})")
+            # Render template directly to show updated info, passing is_admin
+            return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
         except SQLAlchemyError as e:
             db.session.rollback()
             app.logger.error(f"Database error updating account for user {user_id}: {e}")  # Example logging
             flash('An error occurred updating the account. Please try again.', 'error')
             # Re-fetch original data before rendering on error
-            user = db.session.get(User, user_id)  # Use session.get again
-            return render_template('account.html', name=user.name, email=user.email, age=user.age)
+            user = db.session.get(User, user_id)
+            is_admin_status = user.is_admin if user else False # Re-check admin status
+            return render_template('account.html', name=user.name if user else '', email=user.email if user else '', age=user.age if user else '', is_admin=is_admin_status)
 
     # GET request - Render with user data fetched at the start
-    return render_template('account.html', name=user.name, email=user.email, age=user.age)
+    # Pass is_admin status for GET request
+    return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
 
 
 @app.route('/admin/register', methods=['GET', 'POST'])
@@ -426,16 +464,17 @@ def admin_register():
                 flash('Email address already registered.', 'error')
                 return render_template('admin_register.html')
 
+            # Create user with is_admin=True
             user = User(username=username, name=name, age=age, email=email, is_admin=True)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
+            app.logger.info(f"Admin account created successfully for user '{username}'.") # Log admin creation
             flash('Admin account created successfully! Please log in.', 'success')
             return redirect(url_for('login'))
         except SQLAlchemyError as e:
             db.session.rollback()  # Uncommented rollback
             app.logger.error(f"Database error during admin registration: {e}")  # Example logging
-            # Removed the explicit print statements from previous debug step
             flash('An error occurred during admin registration. Please try again.', 'error')
             return render_template('admin_register.html')
 
@@ -445,6 +484,10 @@ def admin_register():
 
 @app.route('/admin/register-page')
 def show_admin_register_form():
+    # Optional: Add check if user is already logged in and is admin
+    # if 'user_id' in session and session.get('is_admin'):
+    #     flash('Admins cannot re-register via this page.', 'warning')
+    #     return redirect(url_for('dashboard'))
     return render_template('admin_register.html')
 
 
