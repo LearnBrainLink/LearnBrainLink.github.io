@@ -14,6 +14,7 @@
             --text-white: #ffffff;
             --light-gray-bg: #f8f9fa;
             --text-secondary-custom: #6c757d;
+            --unity-border: #d1d5db;
         }
 
         html,
@@ -30,9 +31,8 @@
 
         .sidebar {
             box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
-            /* Fixed width/height/position defined inline below */
-            background-color: #ffffff; /* Ensure white background */
-            border-right: 1px solid #dee2e6; /* Match dashboard sidebar */
+            background-color: #ffffff;
+            border-right: 1px solid var(--unity-border);
         }
 
         .content {
@@ -40,8 +40,8 @@
             background-color: var(--light-gray-bg);
             min-height: 100vh;
             width: calc(100% - 40vh);
-            padding: 1.5rem; /* Consistent padding */
-            padding-bottom: 2rem; /* Ensure space at bottom */
+            padding: 1.5rem;
+            padding-bottom: 2rem;
         }
 
         .sidebar-title {
@@ -49,7 +49,7 @@
             text-decoration: none;
             transition: color 0.2s ease-in-out;
             font-weight: 600;
-            font-size: 1.25rem; /* Adjusted size */
+            font-size: 1.25rem;
         }
 
         .sidebar-title:hover {
@@ -74,7 +74,6 @@
             text-decoration: none;
         }
 
-        /* NOTE: Hardcoded 'active' class below needs dynamic handling */
         .sidebar .nav-item.active .nav-link {
             background-color: var(--indigo);
             color: var(--text-white);
@@ -140,50 +139,45 @@
 
         /* Modal Styles */
         .modal-dialog {
-            /* Removed centering styles to use Bootstrap default modal positioning */
-             max-width: 500px; /* Standard Bootstrap modal width */
-             margin: 1.75rem auto; /* Default margin */
+            max-width: 500px;
+            margin: 1.75rem auto;
         }
 
         .modal-content {
-            border-radius: 0.3rem; /* Bootstrap default */
+            border-radius: 0.3rem;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            /* Removed padding - modal-header/body/footer handle it */
         }
 
         .modal-header {
-            /* Keep default header for title and close button */
-             padding: 1rem 1rem;
-             border-bottom: 1px solid #dee2e6;
-             border-top-left-radius: calc(0.3rem - 1px);
-             border-top-right-radius: calc(0.3rem - 1px);
+            padding: 1rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: calc(0.3rem - 1px);
+            border-top-right-radius: calc(0.3rem - 1px);
         }
 
         .modal-title {
-             /* Reset custom styles - use Bootstrap defaults */
-             margin-bottom: 0;
-             line-height: 1.5;
-             text-align: left; /* Default */
-             font-size: 1.25rem; /* Default */
-             color: var(--text-dark);
+            margin-bottom: 0;
+            line-height: 1.5;
+            text-align: left;
+            font-size: 1.25rem;
+            color: var(--text-dark);
         }
 
         .modal-body {
-             padding: 1rem; /* Default body padding */
+            padding: 1rem;
         }
 
         .modal-body .form-group label {
             font-weight: 500;
             color: var(--text-dark);
-            margin-bottom: 0.5rem; /* Standard margin */
-            display: inline-block; /* Standard label display */
+            margin-bottom: 0.5rem;
+            display: inline-block;
         }
 
         .modal-body .form-control {
-            /* Keep existing styles, they look fine */
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
-            padding: 0.375rem 0.75rem; /* Standard BS padding */
+            padding: 0.375rem 0.75rem;
             font-size: 1rem;
             display: block;
             width: 100%;
@@ -194,56 +188,49 @@
         }
 
         .modal-body .form-control:focus {
-             color: var(--text-dark);
-             background-color: #fff;
-             border-color: var(--indigo); /* Use var(--indigo) for consistency */
-             outline: 0;
-             /* Simplified focus shadow to match Bootstrap */
-             box-shadow: 0 0 0 0.2rem rgba(67, 56, 202, 0.25);
+            color: var(--text-dark);
+            background-color: #fff;
+            border-color: var(--indigo);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(67, 56, 202, 0.25);
         }
-
 
         .modal-footer {
-             /* Use Bootstrap default footer layout */
-             display: flex;
-             flex-wrap: wrap;
-             align-items: center;
-             justify-content: flex-end; /* Default alignment */
-             padding: 0.75rem;
-             border-top: 1px solid #dee2e6;
-             border-bottom-right-radius: calc(0.3rem - 1px);
-             border-bottom-left-radius: calc(0.3rem - 1px);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0.75rem;
+            border-top: 1px solid #dee2e6;
+            border-bottom-right-radius: calc(0.3rem - 1px);
+            border-bottom-left-radius: calc(0.3rem - 1px);
         }
 
-         /* Adjust button in footer if needed */
-         .modal-footer .btn-custom-indigo {
-             /* Remove full-width if not desired */
-             /* width: 100%; */
-             padding: 0.375rem 0.75rem; /* Standard BS button padding */
-             font-size: 1rem; /* Standard button text */
-         }
+        .modal-footer .btn-custom-indigo {
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+        }
 
-         .modal .close {
-            /* Keep existing styles for close button position/appearance */
-             position: absolute;
-             top: 1rem; /* Adjust position relative to standard header */
-             right: 1rem;
-             z-index: 10; /* Ensure it's clickable */
-             padding: 0; /* Remove padding */
-             background-color: transparent;
-             border: 0;
-             color: #000; /* Standard BS close color */
-             opacity: 0.5;
-             font-size: 1.5rem;
-             font-weight: 700;
-             line-height: 1;
-             text-shadow: 0 1px 0 #fff;
-         }
-         .modal .close:hover {
-             opacity: .75;
-             text-decoration: none;
-         }
+        .modal .close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            padding: 0;
+            background-color: transparent;
+            border: 0;
+            color: #000;
+            opacity: 0.5;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 0 1px 0 #fff;
+        }
 
+        .modal .close:hover {
+            opacity: .75;
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -256,13 +243,13 @@
                     <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
                 </li>
                 <li class="nav-item active">
-                     <a class="nav-link" href="{{ url_for('volunteeropportunities') }}">Upcoming Opportunities</a>
+                    <a class="nav-link" href="{{ url_for('volunteeropportunities') }}">Upcoming Opportunities</a>
                 </li>
                 <li class="nav-item">
-                     <a class="nav-link" href="{{ url_for('volunteerhours') }}">Volunteer Hours</a>
+                    <a class="nav-link" href="{{ url_for('volunteerhours') }}">Volunteer Hours</a>
                 </li>
                 <li class="nav-item">
-                     <a class="nav-link" href="{{ url_for('account') }}">Account Information</a>
+                    <a class="nav-link" href="{{ url_for('account') }}">Account Information</a>
                 </li>
             </ul>
         </div>
@@ -271,7 +258,6 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
-            {# Map category to Bootstrap alert class #}
             {% set alert_class = 'alert-success' if category == 'success' else ('alert-danger' if category == 'error' else ('alert-warning' if category == 'warning' else 'alert-info')) %}
             <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
                 {{ message }}
@@ -287,14 +273,22 @@
                 <a href="{{ url_for('logout') }}" class="btn btn-custom-indigo btn-signout">Sign Out</a>
             </div>
 
+            {% if is_admin %}
             <div class="mb-4">
                 <button class="btn btn-custom-indigo btn-action mr-2" data-toggle="modal" data-target="#addOpportunityModal">
                     Add Opportunity
                 </button>
-                 <a href="{{ url_for('volunteerhours') }}" class="btn btn-custom-indigo btn-action">
+                <a href="{{ url_for('volunteerhours') }}" class="btn btn-custom-indigo btn-action">
                     Log Hours
                 </a>
             </div>
+            {% else %}
+            <div class="mb-4">
+                <a href="{{ url_for('volunteerhours') }}" class="btn btn-custom-indigo btn-action">
+                    Log Hours
+                </a>
+            </div>
+            {% endif %}
 
             {% for opportunity in opportunities %}
             <div class="card mb-4 opportunity-card">
@@ -315,18 +309,22 @@
                             {{ opportunity.location }}
                         </p>
                         <a class="btn btn-sm btn-custom-indigo mt-2"
-                           href="{{ opportunity.link }}" target="_blank"
-                           rel="noopener noreferrer">More Information</a>
+                            href="{{ opportunity.link }}" target="_blank"
+                            rel="noopener noreferrer">More Information</a>
                     </div>
                 </div>
             </div>
             {% else %}
             {# Message displayed if opportunities list is empty #}
             <div class="alert alert-info mt-4" role="alert">
-                No upcoming opportunities found. Add one using the button above!
+                No upcoming opportunities found.
             </div>
             {% endfor %}
-            </div> </div> <div class="modal fade" id="addOpportunityModal" tabindex="-1" role="dialog" aria-labelledby="addOpportunityModalLabel" aria-hidden="true">
+        </div>
+    </div>
+
+    {% if is_admin %}
+    <div class="modal fade" id="addOpportunityModal" tabindex="-1" role="dialog" aria-labelledby="addOpportunityModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -338,7 +336,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                     <form action="{{ url_for('volunteeropportunities') }}" method="post" id="addOpportunityForm">
+                    <form action="{{ url_for('volunteeropportunities') }}" method="post" id="addOpportunityForm">
                         <div class="form-group">
                             <label for="event">Event</label>
                             <input type="text" class="form-control" name="event" id="event" required>
@@ -362,7 +360,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                     <button type="submit" form="addOpportunityForm" class="btn btn-custom-indigo">
+                    <button type="submit" form="addOpportunityForm" class="btn btn-custom-indigo">
                         Add Opportunity
                     </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -370,6 +368,8 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

@@ -1,8 +1,6 @@
 import random
 import string
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-# --- Add Migrate import ---
-from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
@@ -16,7 +14,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///microvolunteering.db')
 # Use environment variable or default (unsafe for production) for secret key
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'unsafe_dev_secret_key_please_change')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # To suppress a warning
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
 db = SQLAlchemy(app)
 
 # --- Initialize Flask-Migrate ---
@@ -90,14 +88,14 @@ def signup():
         confirmPassword = request.form.get('confirmPassword')
 
         if not all([username, name, age_str, email, password, confirmPassword]):
-             flash('All fields are required.', 'error')
-             return render_template('register.html')
+            flash('All fields are required.', 'error')
+            return render_template('register.html')
 
         try:
             age = int(age_str)
             if age <= 0:
-                 flash('Age must be a positive number.', 'error')
-                 return render_template('register.html')
+                flash('Age must be a positive number.', 'error')
+                return render_template('register.html')
         except ValueError:
             flash('Invalid age format. Please enter a number.', 'error')
             return render_template('register.html')
@@ -124,7 +122,7 @@ def signup():
             return redirect(url_for('login'))
         except SQLAlchemyError as e:
             db.session.rollback()
-            app.logger.error(f"Database error during registration: {e}") # Example logging
+            app.logger.error(f"Database error during registration: {e}")  # Example logging
             flash('An error occurred during registration. Please try again.', 'error')
             return render_template('register.html')
     # GET request
@@ -145,14 +143,14 @@ def login():
             user = User.query.filter_by(username=username).first()
             if user and user.check_password(password):
                 session['user_id'] = user.id
-                session['is_admin'] = user.is_admin # Store admin status in session
+                session['is_admin'] = user.is_admin  # Store admin status in session
                 flash('Login successful!', 'success')
                 return redirect(url_for('dashboard'))
             else:
                 flash('Invalid username or password.', 'error')
                 return render_template('login.html')
         except SQLAlchemyError as e:
-            app.logger.error(f"Database error during login: {e}") # Example logging
+            app.logger.error(f"Database error during login: {e}")  # Example logging
             flash('An error occurred during login. Please try again.', 'error')
             return render_template('login.html')
     # GET request
@@ -166,10 +164,19 @@ def volunteeropportunities():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
+    user = db.session.get(User, user_id)
+    if not user:
+        flash('User not found. Please log in again.', 'error')
+        return redirect(url_for('login'))
+
     # Fetch opportunities initially for GET request or if POST fails before redirect
     opportunities = VolunteerOpportunity.query.order_by(VolunteerOpportunity.date.desc()).all()
 
     if request.method == 'POST':
+        if not session.get('is_admin', False):  # Check admin status
+            flash('You do not have permission to add opportunities.', 'warning')
+            return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=False)  # Pass is_admin explicitly
+
         event = request.form.get('event')
         date_str = request.form.get('date')
         duration_str = request.form.get('duration')
@@ -177,24 +184,24 @@ def volunteeropportunities():
         link = request.form.get('link')
 
         if not all([event, date_str, duration_str, location, link]):
-             flash('All fields are required to create an opportunity.', 'error')
-             # Render again with fetched opportunities
-             return render_template('volunteeropportunities.html', opportunities=opportunities)
+            flash('All fields are required to create an opportunity.', 'error')
+            # Render again with fetched opportunities
+            return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
         try:
             duration = float(duration_str)
             if duration <= 0:
                 flash('Duration must be a positive number.', 'error')
-                return render_template('volunteeropportunities.html', opportunities=opportunities)
+                return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
         except ValueError:
             flash('Invalid duration format. Please enter a number.', 'error')
-            return render_template('volunteeropportunities.html', opportunities=opportunities)
+            return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
         try:
             date = datetime.strptime(date_str, "%Y-%m-%d")
         except ValueError:
-            flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
-            return render_template('volunteeropportunities.html', opportunities=opportunities)
+            flash('Invalid date format. Please use %Y-%m-%d.', 'error')
+            return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
         try:
             opportunity = VolunteerOpportunity(
@@ -202,16 +209,16 @@ def volunteeropportunities():
             db.session.add(opportunity)
             db.session.commit()
             flash('Opportunity created successfully!', 'success')
-            return redirect(url_for('volunteeropportunities')) # Redirect after successful POST
+            return redirect(url_for('volunteeropportunities'))  # Redirect after successful POST
         except SQLAlchemyError as e:
             db.session.rollback()
-            app.logger.error(f"Database error creating opportunity: {e}") # Example logging
+            app.logger.error(f"Database error creating opportunity: {e}")  # Example logging
             flash('An error occurred creating the opportunity. Please try again.', 'error')
             # No need to fetch opportunities again, already fetched before 'if POST'
-            return render_template('volunteeropportunities.html', opportunities=opportunities)
+            return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
     # GET request - Render with fetched opportunities
-    return render_template('volunteeropportunities.html', opportunities=opportunities)
+    return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
 
 @app.route('/volunteer-hours', methods=['GET', 'POST'])
@@ -221,9 +228,14 @@ def volunteerhours():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
+    user = db.session.get(User, user_id)
+    if not user:
+        flash('User not found. Please log in again.', 'error')
+        return redirect(url_for('login'))
+
     # Fetch logs initially for GET or if POST fails before redirect
     logs = HoursLog.query.filter_by(user_id=user_id).order_by(HoursLog.date.desc()).all()
-    total_hours = sum(log.hours for log in logs) # More concise sum
+    total_hours = sum(log.hours for log in logs)  # More concise sum
 
     if request.method == 'POST':
         hours_str = request.form.get('hours')
@@ -232,69 +244,69 @@ def volunteerhours():
 
         if not all([hours_str, event, date_str]):
             flash('All fields are required to log hours.', 'error')
-            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
         try:
             hours = float(hours_str)
             if hours <= 0:
-                 flash('Hours must be a positive number.', 'error')
-                 return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+                flash('Hours must be a positive number.', 'error')
+                return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
         except ValueError:
             flash('Invalid hours format. Please enter a number.', 'error')
-            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
         try:
             date = datetime.strptime(date_str, "%Y-%m-%d")
             if date > datetime.now():
-                 flash('Cannot log hours for a future date.', 'error')
-                 return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+                flash('Cannot log hours for a future date.', 'error')
+                return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
-            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
         try:
             log = HoursLog(user_id=user_id, hours=hours, event=event, date=date)
             db.session.add(log)
             db.session.commit()
             flash('Hours logged successfully!', 'success')
-            return redirect(url_for('volunteerhours')) # Redirect after successful POST
+            return redirect(url_for('volunteerhours'))  # Redirect after successful POST
         except SQLAlchemyError as e:
             db.session.rollback()
-            app.logger.error(f"Database error logging hours: {e}") # Example logging
+            app.logger.error(f"Database error logging hours: {e}")  # Example logging
             flash('An error occurred logging hours. Please try again.', 'error')
             # No need to fetch logs/total again
-            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+            return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
     # GET request - Render with fetched logs/total
-    return render_template('volunteerhours.html', logs=logs, total_hours=total_hours)
+    return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
 
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
-         flash('Please log in to access the dashboard.', 'warning')
-         return redirect(url_for('login'))
+        flash('Please log in to access the dashboard.', 'warning')
+        return redirect(url_for('login'))
 
-    user_id = session['user_id'] # Get user_id once
+    user_id = session['user_id']  # Get user_id once
 
     try:
         # Use get_or_404 for cleaner handling of not found user
-        user = db.session.get(User, user_id) # Use newer session.get method
+        user = db.session.get(User, user_id)  # Use newer session.get method
         if not user:
-             # This case might be less likely now with session.get behavior but keep check
-             session.pop('user_id', None)
-             session.pop('is_admin', None)
-             flash('User not found. Please log in again.', 'error')
-             return redirect(url_for('login'))
+            # This case might be less likely now with session.get behavior but keep check
+            session.pop('user_id', None)
+            session.pop('is_admin', None)
+            flash('User not found. Please log in again.', 'error')
+            return redirect(url_for('login'))
 
         logs = HoursLog.query.filter_by(user_id=user_id).all()
         total_hours = sum(log.hours for log in logs)
         is_admin = session.get('is_admin', False)
         return render_template('dashboard.html', name=user.name, total_hours=total_hours, is_admin=is_admin)
     except SQLAlchemyError as e:
-        app.logger.error(f"Database error on dashboard for user {user_id}: {e}") # Example logging
+        app.logger.error(f"Database error on dashboard for user {user_id}: {e}")  # Example logging
         flash('An error occurred accessing the dashboard.', 'error')
-        return redirect(url_for('login')) # Redirect on error
+        return redirect(url_for('login'))  # Redirect on error
 
 
 @app.route('/logout')
@@ -344,9 +356,9 @@ def account():
         # Check email uniqueness only if it changed
         email_changed = new_email != original_email
         if email_changed and User.query.filter(User.id != user_id, User.email == new_email).first():
-             flash('That email address is already registered by another user.', 'error')
-             # Render with originally fetched user data but keep attempted name/age changes in form
-             return render_template('account.html', name=name_input, email=original_email, age=age_input_str)
+            flash('That email address is already registered by another user.', 'error')
+            # Render with originally fetched user data but keep attempted name/age changes in form
+            return render_template('account.html', name=name_input, email=original_email, age=age_input_str)
 
         # Update user object
         user.name = name_input
@@ -359,12 +371,12 @@ def account():
             # Render template directly to show updated info without full redirect
             return render_template('account.html', name=user.name, email=user.email, age=user.age)
         except SQLAlchemyError as e:
-             db.session.rollback()
-             app.logger.error(f"Database error updating account for user {user_id}: {e}") # Example logging
-             flash('An error occurred updating the account. Please try again.', 'error')
-             # Re-fetch original data before rendering on error
-             user = db.session.get(User, user_id) # Use session.get again
-             return render_template('account.html', name=user.name, email=user.email, age=user.age)
+            db.session.rollback()
+            app.logger.error(f"Database error updating account for user {user_id}: {e}")  # Example logging
+            flash('An error occurred updating the account. Please try again.', 'error')
+            # Re-fetch original data before rendering on error
+            user = db.session.get(User, user_id)  # Use session.get again
+            return render_template('account.html', name=user.name, email=user.email, age=user.age)
 
     # GET request - Render with user data fetched at the start
     return render_template('account.html', name=user.name, email=user.email, age=user.age)
@@ -382,14 +394,14 @@ def admin_register():
         admin_code = request.form.get('adminCode')
 
         if not all([username, name, age_str, email, password, confirmPassword, admin_code]):
-             flash('All fields are required.', 'error')
-             return render_template('admin_register.html')
+            flash('All fields are required.', 'error')
+            return render_template('admin_register.html')
 
         try:
             age = int(age_str)
             if age <= 0:
-                 flash('Age must be a positive number.', 'error')
-                 return render_template('admin_register.html')
+                flash('Age must be a positive number.', 'error')
+                return render_template('admin_register.html')
         except ValueError:
             flash('Invalid age format. Please enter a number.', 'error')
             return render_template('admin_register.html')
@@ -419,8 +431,8 @@ def admin_register():
             flash('Admin account created successfully! Please log in.', 'success')
             return redirect(url_for('login'))
         except SQLAlchemyError as e:
-            db.session.rollback() # Uncommented rollback
-            app.logger.error(f"Database error during admin registration: {e}") # Example logging
+            db.session.rollback()  # Uncommented rollback
+            app.logger.error(f"Database error during admin registration: {e}")  # Example logging
             # Removed the explicit print statements from previous debug step
             flash('An error occurred during admin registration. Please try again.', 'error')
             return render_template('admin_register.html')

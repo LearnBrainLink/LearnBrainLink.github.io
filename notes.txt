@@ -1,0 +1,3 @@
+- Admin has to provide number of available slots during oppportunity creation
+- People can register based on available slots
+- People can only log hours for events they are signed up for
