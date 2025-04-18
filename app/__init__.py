@@ -6,19 +6,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import os
 from sqlalchemy.exc import SQLAlchemyError
-# Removed 'event' import from sqlalchemy as it wasn't used
-# from sqlalchemy import event # <-- Removed
+from flask_migrate import Migrate
+import logging
 
 app = Flask(__name__)
-# Use environment variable or default for database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///microvolunteering.db')
-# Use environment variable or default (unsafe for production) for secret key
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'unsafe_dev_secret_key_please_change')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
-db = SQLAlchemy(app)
 
-# --- Initialize Flask-Migrate ---
-migrate = Migrate(app, db)
+# Configure logging (very important!)
+logging.basicConfig(level=logging.INFO)  # Or logging.DEBUG, etc.
+app.logger.setLevel(logging.INFO)
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)  # Initialize Migrate with app and db
 
 # --- Database Models ---
 
@@ -261,7 +262,7 @@ def volunteerhours():
                 flash('Cannot log hours for a future date.', 'error')
                 return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
         except ValueError:
-            flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
+            flash('Invalid date format. Please use %Y-%m-%d.', 'error')
             return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
         try:
