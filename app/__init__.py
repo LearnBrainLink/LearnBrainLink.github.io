@@ -21,6 +21,7 @@ app.logger.setLevel(logging.INFO)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)  # Initialize Migrate with app and db
 
+
 # --- Database Models ---
 
 class User(db.Model):
@@ -176,7 +177,7 @@ def volunteeropportunities():
     if request.method == 'POST':
         if not session.get('is_admin', False):  # Check admin status
             flash('You do not have permission to add opportunities.', 'warning')
-            return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=False)  # Pass is_admin explicitly
+            return redirect(url_for('volunteeropportunities'))
 
         event = request.form.get('event')
         date_str = request.form.get('date')
