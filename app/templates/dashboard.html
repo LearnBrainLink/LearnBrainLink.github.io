@@ -29,7 +29,7 @@
         }
 
         .content {
-             /* Margin adjusted to match sidebar width (40vh) */
+            /* Margin adjusted to match sidebar width (40vh) */
             margin-left: 40vh;
             background-color: var(--light-gray-bg);
             min-height: 100vh;
@@ -150,11 +150,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('account') }}">Account Information</a>
                 </li>
-                 {% if is_admin %}
-                 <li class="nav-item">
-                     <a class="nav-link" href="{{ url_for('admin_register') }}">(Admin Register)</a>
-                     </li>
-                 {% endif %}
+                
             </ul>
         </div>
 
@@ -175,7 +171,7 @@
                     <h2>Quick Actions</h2>
                     <div class="d-flex flex-column flex-md-row">
                          <a href="{{ url_for('volunteeropportunities') }}" class="btn btn-custom-indigo flex-fill mr-md-2 mb-2 mb-md-0">Find Opportunities</a>
-                        <a href="{{ url_for('volunteerhours') }}" class="btn btn-custom-indigo flex-fill ml-md-2">Log Hours</a>
+                         <a href="{{ url_for('volunteerhours') }}" class="btn btn-custom-indigo flex-fill ml-md-2">Log Hours</a>
                     </div>
                 </div>
             </div>

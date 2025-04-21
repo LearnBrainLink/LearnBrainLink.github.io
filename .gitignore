@@ -1,0 +1,12 @@
+# Environment variables
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+# Add other files/folders to ignore as needed
