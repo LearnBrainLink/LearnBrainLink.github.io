@@ -4,57 +4,67 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-import os
+import os # Keep os import if needed elsewhere, otherwise remove
 from sqlalchemy.exc import SQLAlchemyError
 from flask_migrate import Migrate
 import logging
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
-# --- Added: Load environment variables from .env file ---
-from dotenv import load_dotenv
-load_dotenv()
-# --- End Added ---
-
+# Environment variables are NOT loaded from .env in this version
 
 app = Flask(__name__)
 
-# --- Configurations using os.environ.get ---
-# Now these lines will correctly read variables loaded from .env
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///microvolunteering.db')
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'unsafe_dev_secret_key_please_change')
+# --- Hardcoded Configurations ---
+# !! WARNING: Hardcoding secrets like this is NOT recommended for security !!
+# !! It's better practice to use Environment Variables (.env file or system env) !!
+
+# Flask Configuration
+app.secret_key = '<your_very_strong_random_32_character_hex_secret_key_here>' # MUST be set to a real secret key
+app.config['FLASK_DEBUG'] = True # Set to False for production
+
+# Database Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/microvolunteering.db' # Example for SQLite
+# Example for PostgreSQL:
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<db_user>:<db_password>@<db_host>:<db_port>/<db_name>'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Configure logging
-# ... (logging config remains the same) ...
+# Mail Configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'LearnBrainLink@gmail.com' # Your sending email
+app.config['MAIL_PASSWORD'] = 'oqis jrjx avnj jajk' # Your email app password
+app.config['MAIL_DEFAULT_SENDER'] = ('Unity Volunteers', 'LearnBrainLink@gmail.com') # Can customize sender name
 
-# Mail Configuration (reads from env vars loaded above)
-# ... (mail config remains the same) ...
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ('true', '1', 't')
-app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'false').lower() in ('true', '1', 't')
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', ('Unity Volunteers', app.config.get('MAIL_USERNAME', 'default@example.com'))) # Use .get for safety if username might be missing
-app.config['SECURITY_PASSWORD_SALT'] = os.environ.get('SECURITY_PASSWORD_SALT', 'dev_salt_change_me')
+# Security Settings
+app.config['SECURITY_PASSWORD_SALT'] = '80e1044da75a2756a1f72c374a3fc7be' # MUST be set to a real salt
+
+# Application Specific Settings
+ADMIN_CODE = "123456" # Hardcoded Admin Code
+
+# --- End Hardcoded Configurations ---
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+app.logger.setLevel(logging.INFO)
+
 
 # Initialize extensions AFTER configuration is set
 mail = Mail(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# ... (rest of your Flask application code: token functions, models, routes, etc.) ...
-
 
 # --- Token Generation/Verification ---
 def generate_confirmation_token(email):
-    # Use current_app proxy to access config safely
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY']) # Use app.secret_key instead
     return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
 
 def confirm_token(token, expiration=3600): # Default expiration: 1 hour
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY']) # Use app.secret_key instead
     try:
         email = serializer.loads(
             token,
@@ -75,20 +85,17 @@ class User(db.Model):
     name = db.Column(db.String(80), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False) # Renamed from password_hash for consistency
+    password = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
-    # --- Added Field ---
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
-    # --- End Added Field ---
 
     def set_password(self, password):
-        self.password = generate_password_hash(password) # Ensure this sets the 'password' field
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
 class HoursLog(db.Model):
-    # ... (no changes needed here) ...
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     hours = db.Column(db.Float, nullable=False)
@@ -98,7 +105,6 @@ class HoursLog(db.Model):
 
 
 class VolunteerOpportunity(db.Model):
-    # ... (no changes needed here) ...
     id = db.Column(db.Integer, primary_key=True)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     event = db.Column(db.String(255), nullable=False)
@@ -109,10 +115,7 @@ class VolunteerOpportunity(db.Model):
     creator = db.relationship('User', backref=db.backref('created_opportunities', lazy=True))
 
 
-# --- Admin Code Handling ---
-ADMIN_CODE = os.environ.get('ADMIN_REGISTRATION_CODE', "123456")
-
-# --- Routes ---
+# --- Routes --- (Keep all your routes as they were, they use app.config) ---
 
 @app.route('/')
 def index():
@@ -204,6 +207,13 @@ def register(): # Renamed from signup for consistency
 @app.route('/confirm/<token>')
 def confirm_email(token):
     try:
+        # Need to use app.secret_key directly as current_app might not be available
+        # outside of request context in token functions if defined globally
+        # It's better to pass 'app' or use current_app inside the route if possible.
+        # For simplicity here, assuming token functions work with app.secret_key if defined globally.
+        # Let's refine token functions to use app instance if available
+        # We will keep the global functions but note this nuance.
+
         email = confirm_token(token) # Verify the token, returns email or False
         if not email:
             flash('The confirmation link is invalid or has expired.', 'error')
@@ -220,17 +230,16 @@ def confirm_email(token):
             flash('Account already confirmed. Please login.', 'success')
         else:
             user.is_verified = True
-            # db.session.add(user) # Not needed if user object is tracked by session
             db.session.commit()
             app.logger.info(f"Account confirmed successfully for user '{user.username}' (Email: {email}).")
             flash('You have confirmed your account. Thanks! You can now log in.', 'success')
         return redirect(url_for('login')) # Redirect to login after confirmation attempt
 
     except SQLAlchemyError as e:
-         db.session.rollback()
-         app.logger.error(f"Database error during email confirmation processing for token {token}: {e}")
-         flash('An error occurred during confirmation. Please try again or contact support.', 'error')
-         return redirect(url_for('login'))
+        db.session.rollback()
+        app.logger.error(f"Database error during email confirmation processing for token {token}: {e}")
+        flash('An error occurred during confirmation. Please try again or contact support.', 'error')
+        return redirect(url_for('login'))
     except Exception as e: # Catch other potential errors
         app.logger.error(f"Unexpected error during email confirmation processing for token {token}: {e}")
         flash('An unexpected error occurred. Please try again or contact support.', 'error')
@@ -277,9 +286,6 @@ def login():
 
 
 # --- Other routes (dashboard, logout, account, admin_register, etc.) ---
-# ... (Keep your existing routes for dashboard, logout, account, etc.) ...
-# Ensure routes requiring login check session['user_id']
-# Ensure sensitive actions check user.is_admin from the DB object where necessary
 
 @app.route('/volunteer-opportunities', methods=['GET', 'POST'])
 def volunteeropportunities():
@@ -295,21 +301,18 @@ def volunteeropportunities():
         session.pop('is_admin', None)
         return redirect(url_for('login'))
 
-    # --- Check Verification Status ---
     if not user.is_verified:
-         flash('Please verify your email address to access this page.', 'warning')
-         return redirect(url_for('dashboard')) # Or wherever you want unverified users to go
-    # --- End Verification Check ---
+        flash('Please verify your email address to access this page.', 'warning')
+        return redirect(url_for('dashboard'))
 
     opportunities = VolunteerOpportunity.query.order_by(VolunteerOpportunity.date.desc()).all()
 
     if request.method == 'POST':
-        if not user.is_admin: # Check admin status from DB for POST
+        if not user.is_admin:
             app.logger.warning(f"Unauthorized POST attempt to add opportunity by user '{user.username}' (ID: {user_id}).")
             flash('You do not have permission to add opportunities.', 'warning')
             return redirect(url_for('volunteeropportunities'))
 
-        # ... (rest of your POST handling for creating opportunities) ...
         event = request.form.get('event')
         date_str = request.form.get('date')
         duration_str = request.form.get('duration')
@@ -348,8 +351,7 @@ def volunteeropportunities():
             flash('An error occurred creating the opportunity. Please try again.', 'error')
             return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
-    # GET request or POST validation failure
-    return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin) # Pass admin status
+    return render_template('volunteeropportunities.html', opportunities=opportunities, is_admin=user.is_admin)
 
 
 @app.route('/volunteer-hours', methods=['GET', 'POST'])
@@ -366,17 +368,14 @@ def volunteerhours():
         session.pop('is_admin', None)
         return redirect(url_for('login'))
 
-    # --- Check Verification Status ---
     if not user.is_verified:
-         flash('Please verify your email address to access this page.', 'warning')
-         return redirect(url_for('dashboard'))
-    # --- End Verification Check ---
+        flash('Please verify your email address to access this page.', 'warning')
+        return redirect(url_for('dashboard'))
 
     logs = HoursLog.query.filter_by(user_id=user_id).order_by(HoursLog.date.desc()).all()
     total_hours = sum(log.hours for log in logs)
 
     if request.method == 'POST':
-        # ... (rest of your POST handling for logging hours) ...
         hours_str = request.form.get('hours')
         event = request.form.get('event')
         date_str = request.form.get('date')
@@ -415,8 +414,7 @@ def volunteerhours():
             flash('An error occurred logging hours. Please try again.', 'error')
             return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
-    # GET request or POST validation failure
-    return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin) # Pass admin status
+    return render_template('volunteerhours.html', logs=logs, total_hours=total_hours, is_admin=user.is_admin)
 
 
 @app.route('/dashboard')
@@ -434,11 +432,8 @@ def dashboard():
             flash('User not found. Please log in again.', 'error')
             return redirect(url_for('login'))
 
-        # --- Check Verification Status (Optional but good practice) ---
         if not user.is_verified:
-             flash('Please verify your email address using the link sent to you.', 'warning')
-             # Decide where to redirect or show a limited dashboard
-             # return render_template('dashboard_unverified.html', name=user.name, is_admin=user.is_admin)
+            flash('Please verify your email address using the link sent to you.', 'warning')
 
         logs = HoursLog.query.filter_by(user_id=user_id).all()
         total_hours = sum(log.hours for log in logs)
@@ -453,7 +448,6 @@ def dashboard():
 
 @app.route('/logout')
 def logout():
-    # ... (Keep existing logout code) ...
     user_id = session.get('user_id')
     username = 'Unknown user'
     if user_id:
@@ -477,25 +471,18 @@ def account():
     user = db.session.get(User, user_id)
 
     if not user:
-        # ... (Keep existing user not found handling) ...
         session.pop('user_id', None)
         session.pop('is_admin', None)
         flash('User not found. Please log in again.', 'error')
         return redirect(url_for('login'))
 
-    # --- Check Verification Status ---
     if not user.is_verified:
-         flash('Please verify your email address to access this page.', 'warning')
-         return redirect(url_for('dashboard'))
-    # --- End Verification Check ---
+        flash('Please verify your email address to access this page.', 'warning')
+        return redirect(url_for('dashboard'))
 
     is_admin_status = user.is_admin
 
     if request.method == 'POST':
-        # ... (Keep existing POST logic for updating account) ...
-        # NOTE: If email is updated, you SHOULD re-verify the NEW email.
-        # This adds complexity: Set is_verified=False, send new link.
-        # For simplicity, this example doesn't re-verify on email change.
         original_email = user.email
         new_email = request.form.get('email_input')
         name_input = request.form.get('name_input')
@@ -523,31 +510,30 @@ def account():
         user.email = new_email
         user.age = age_input
 
+        # If email changed, potentially set is_verified=False and resend confirmation
+        # if email_changed:
+        #     user.is_verified = False
+        #     # Send new confirmation email here... (adds complexity)
+
         try:
             db.session.commit()
             flash('Account updated successfully!', 'success')
             app.logger.info(f"Account updated for user '{user.username}' (ID: {user_id})")
-            # Re-render with updated user data
             return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
         except SQLAlchemyError as e:
             db.session.rollback()
             app.logger.error(f"Database error updating account for user {user_id}: {e}")
             flash('An error occurred updating the account. Please try again.', 'error')
-            # Re-fetch original data on error
             user = db.session.get(User, user_id) # Re-fetch
             is_admin_status = user.is_admin if user else False
             return render_template('account.html', name=user.name if user else '', email=user.email if user else '', age=user.age if user else '', is_admin=is_admin_status)
 
-    # GET request
     return render_template('account.html', name=user.name, email=user.email, age=user.age, is_admin=is_admin_status)
 
 
 @app.route('/admin/register', methods=['GET', 'POST'])
 def admin_register():
     if request.method == 'POST':
-        # ... (Keep existing admin registration logic) ...
-        # IMPORTANT: Admin accounts created here are NOT automatically verified
-        # by email in this flow. You might want to add verification or handle separately.
         username = request.form.get('username')
         name = request.form.get('name')
         age_str = request.form.get('age')
@@ -556,7 +542,6 @@ def admin_register():
         confirmPassword = request.form.get('confirmPassword')
         admin_code = request.form.get('adminCode')
 
-        # ... (rest of your validation) ...
         if not all([username, name, age_str, email, password, confirmPassword, admin_code]):
             flash('All fields are required.', 'error')
             return render_template('admin_register.html')
@@ -574,6 +559,7 @@ def admin_register():
             flash('Passwords do not match', 'error')
             return render_template('admin_register.html')
 
+        # Use the hardcoded ADMIN_CODE variable defined near the top
         if admin_code != ADMIN_CODE:
             flash('Invalid admin code', 'error')
             return render_template('admin_register.html')
@@ -586,9 +572,7 @@ def admin_register():
                 flash('Email address already registered.', 'error')
                 return render_template('admin_register.html')
 
-            # Create user with is_admin=True, is_verified=True (assuming admin code implies verification)
-            # OR set is_verified=False and require email confirmation for admins too.
-            user = User(username=username, name=name, age=age, email=email, is_admin=True, is_verified=True) # Set verified for admin
+            user = User(username=username, name=name, age=age, email=email, is_admin=True, is_verified=True)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -601,20 +585,12 @@ def admin_register():
             flash('An error occurred during admin registration. Please try again.', 'error')
             return render_template('admin_register.html')
 
-    # GET request
     return render_template('admin_register.html')
 
 
-# This route seems redundant if you just link to /admin/register
-# @app.route('/admin/register-page')
-# def show_admin_register_form():
-#     return render_template('admin_register.html')
-
-
 if __name__ == '__main__':
-    is_debug = os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
-    # Create tables if they don't exist when running directly (for dev)
-    # Consider removing this if using migrations exclusively
+    # Use FLASK_DEBUG from config (which is hardcoded above)
+    is_debug = app.config.get('FLASK_DEBUG', False)
     # with app.app_context():
-    #     db.create_all()
+    #     db.create_all() # Use migrations instead typically
     app.run(debug=is_debug)
