@@ -24,7 +24,7 @@ app.secret_key = '<your_very_strong_random_32_character_hex_secret_key_here>' # 
 app.config['FLASK_DEBUG'] = True # Set to False for production
 
 # Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/microvolunteering.db' # Example for SQLite
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////workspaces/LearnBrainLink.github.io/instance/microvolunteering.db' # Example for SQLite
 # Example for PostgreSQL:
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<db_user>:<db_password>@<db_host>:<db_port>/<db_name>'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
